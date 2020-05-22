@@ -75,6 +75,9 @@ RUN set -ex \
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
+COPY dags/* ${AIRFLOW_USER_HOME}/dags/
+COPY requirements.txt /requirements.txt
+COPY config/kube.config ${AIRFLOW_USER_HOME}/kube.config
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 

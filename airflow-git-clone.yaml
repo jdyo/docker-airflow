@@ -1,0 +1,59 @@
+apiVersion: v1
+data:
+  git-clone.sh: |
+    #!/bin/sh -e
+    REPO=$1
+    REF=$2
+    DIR=$3
+    REPO_HOST=$4
+    REPO_PORT=$5
+    PRIVATE_KEY=$6
+    mkdir -p ~/.ssh/
+    cp -rL /keys/* ~/.ssh/
+    chmod 600 ~/.ssh/*
+    echo -e "Host $REPO_HOST\n  Port $REPO_PORT\n  IdentityFile ~/.ssh/$PRIVATE_KEY" > ~/.ssh/config
+    # Init Containers will re-run on Pod restart. Remove the directory's contents
+    # and reprovision when this happens.
+    if [ -d "$DIR" ]; then
+        rm -rf $( find $DIR -mindepth 1 )
+    fi
+    git clone $REPO -b $REF $DIR
+  git-sync.sh: |
+    #!/bin/sh -e
+    REPO=$1
+    REF=$2
+    DIR=$3
+    REPO_HOST=$4
+    REPO_PORT=$5
+    PRIVATE_KEY=$6
+    SYNC_TIME=$7
+    mkdir -p ~/.ssh/
+    cp -rL /keys/* ~/.ssh/
+    chmod 600 ~/.ssh/*
+    echo -e "Host $REPO_HOST\n  Port $REPO_PORT\n  IdentityFile ~/.ssh/$PRIVATE_KEY" > ~/.ssh/config
+    cd $DIR
+    while true; do
+      git fetch origin $REF;
+      git reset --hard origin/$REF;
+      git clean -fd;
+      date;
+      echo "*** sleeping ${SYNC_TIME} seconds"
+      sleep $SYNC_TIME;
+    done
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: airflow
+    meta.helm.sh/release-namespace: airflow
+  creationTimestamp: "2020-05-22T02:03:24Z"
+  labels:
+    app: airflow
+    app.kubernetes.io/managed-by: Helm
+    chart: airflow-6.10.4
+    heritage: Helm
+    release: airflow
+  name: airflow-git-clone
+  namespace: airflow
+  resourceVersion: "862662"
+  selfLink: /api/v1/namespaces/airflow/configmaps/airflow-git-clone
+  uid: db04c7eb-72b9-49a4-b327-09c237fdd167
