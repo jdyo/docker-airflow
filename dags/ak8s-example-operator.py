@@ -6,7 +6,7 @@ YESTERDAY = datetime.datetime.now() - datetime.timedelta(days=1)
 dag=models.DAG(
             dag_id='a_pod-ex-minimum',
             schedule_interval=datetime.timedelta(days=1),
-            start_date=YESTERDAY) 
+            start_date=datetime.datetime(2019, 1, 1)) 
         
 kubernetes_min_pod = kubernetes_pod_operator.KubernetesPodOperator(
         task_id='pod-ex-minimum',
